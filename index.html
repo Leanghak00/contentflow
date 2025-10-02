@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <title>វត្តមានសិស្ស</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Kantumruy Pro', sans-serif; text-align:center; padding:20px; background:#f8f9fa; }
+    h1,h2 { color:#333; }
+    form { margin:20px auto; background:#fff; padding:20px; display:inline-block; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); width:90%; max-width:400px; }
+    input, button { padding:10px; margin:5px; border-radius:5px; font-family:'Kantumruy Pro', sans-serif; font-size:14px; width:90%; max-width:300px; }
+    button { border:none; cursor:pointer; }
+    .btn-present { background:#28a745; color:#fff; }
+    .btn-present:hover { background:#218838; }
+    .btn-absent { background:#dc3545; color:#fff; }
+    .btn-absent:hover { background:#c82333; }
+    table { margin:20px auto; border-collapse:collapse; width:95%; max-width:600px; background:#fff; box-shadow:0 0 10px rgba(0,0,0,0.1); font-size:14px; }
+    th, td { border:1px solid #ddd; padding:8px; word-break:break-word; }
+    th { background:#007bff; color:#fff; }
+    .present { color:green; font-weight:bold; }
+    .absent { color:red; font-weight:bold; }
+    #clearHistory, #exportCSV { margin-top:10px; width:90%; max-width:200px; }
+    #clearHistory { background:#ffc107; color:#000; }
+    #clearHistory:hover { background:#e0a800; }
+    #exportCSV { background:#17a2b8; color:#fff; }
+    #exportCSV:hover { background:#117a8b; }
+    #adminPanel { display:none; margin-top:20px; }
+
+    /* Responsive for small screens */
+    @media screen and (max-width:600px){
+      table, th, td { font-size:12px; }
+      input, button { font-size:12px; padding:8px; }
+      form { padding:15px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>វត្តមានសិស្ស</h1>
+
+  <!-- Form Input សិស្ស -->
+  <form id="attendanceForm">
+    <label for="name">សូមវាយឈ្មោះខ្លួនឯង:</label><br>
+    <input type="text" id="name" placeholder="ឈ្មោះសិស្ស" required><br>
+    <button type="button" class="btn-present" onclick="markAttendance('មក')">មក</button>
+    <button type="button" class="btn-absent" onclick="markAttendance('មិនមក')">មិនមក</button>
+  </form>
+
+  <!-- Admin Login -->
+  <h2>Admin Login</h2>
+  <form id="adminForm">
+    <input type="password" id="adminPassword" placeholder="Password Admin">
+    <button type="button" onclick="loginAdmin()">ចូល</button>
+  </form>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel">
+    <h2>ប្រវត្តិវត្តមានសិស្ស</h2>
+    <table id="attendanceTable">
+      <thead>
+        <tr>
+          <th>ល.រ</th>
+          <th>ឈ្មោះសិស្ស</th>
+          <th>ស្ថានភាព</th>
+          <th>ម៉ោង</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="clearHistory" onclick="clearHistory()">🗑️ សម្អាតប្រវត្តិ</button>
+    <button id="exportCSV" onclick="exportCSV()">⬇️ Export CSV</button>
+  </div>
+
+  <script>
+    const TELEGRAM_TOKEN = "7855792983:AAFHz0DUNqGr8lGyYXnO4W4kh7RI_1y14ps";
+    const CHAT_ID = "1481970507";
+    const ADMIN_PASSWORD = "2025";
+    let counter = 0;
+    let history = [];
+
+    // Load history
+    window.onload = function() {
+      const saved = localStorage.getItem("attendanceHistory");
+      if(saved) { history = JSON.parse(saved); }
+    }
+
+    function markAttendance(status) {
+      const nameInput = document.getElementById("name");
+      const name = nameInput.value.trim();
+      if(!name) { alert("សូមវាយឈ្មោះសិស្ស!"); return; }
+
+      const timeNow = new Date().toLocaleString();
+      const record = { name, status, time: timeNow };
+      history.push(record);
+      localStorage.setItem("attendanceHistory", JSON.stringify(history));
+      nameInput.value = "";
+
+      // Send Telegram
+      const message = `📚 វត្តមានសិស្ស\n👤 ឈ្មោះ: ${name}\n📌 ស្ថានភាព: ${status}\n⏰ ម៉ោង: ${timeNow}`;
+      fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ chat_id: CHAT_ID, text: message })
+      });
+    }
+
+    function loginAdmin() {
+      const pass = document.getElementById("adminPassword").value;
+      if(pass === ADMIN_PASSWORD){
+        document.getElementById("adminPanel").style.display = "block";
+        document.getElementById("adminForm").style.display = "none";
+        renderTable();
+      } else {
+        alert("Password មិនត្រឹមត្រូវ!");
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("attendanceTable").getElementsByTagName("tbody")[0];
+      tbody.innerHTML = "";
+      counter = 0;
+      history.forEach(record => addRow(record));
+    }
+
+    function addRow(record) {
+      counter++;
+      const table = document.getElementById("attendanceTable").getElementsByTagName("tbody")[0];
+      const newRow = table.insertRow();
+      newRow.insertCell(0).innerText = counter;
+      newRow.insertCell(1).innerText = record.name;
+      newRow.insertCell(2).innerHTML = record.status === "មក" ? `<span class="present">${record.status}</span>` : `<span class="absent">${record.status}</span>`;
+      newRow.insertCell(3).innerText = record.time;
+    }
+
+    function clearHistory() {
+      if(confirm("តើអ្នកចង់សម្អាតប្រវត្តិវត្តមានទាំងអស់មែនទេ?")){
+        localStorage.removeItem("attendanceHistory");
+        history = [];
+        renderTable();
+      }
+    }
+
+    function exportCSV() {
+      if(history.length===0){ alert("មិនមានទិន្នន័យសម្រាប់ Export!"); return; }
+      let csv = "ល.រ,ឈ្មោះសិស្ស,ស្ថានភាព,ម៉ោង\n";
+      history.forEach((rec,i)=>{
+        csv += `${i+1},${rec.name},${rec.status},${rec.time}\n`;
+      });
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Attendance_History.csv`;
+      link.click();
+    }
+  </script>
+</body>
+</html>
