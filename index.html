@@ -1,156 +1,367 @@
 <!DOCTYPE html>
 <html lang="km">
 <head>
-  <meta charset="UTF-8">
-  <title>វត្តមានសិស្ស</title>
-  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Kantumruy Pro', sans-serif; text-align:center; padding:20px; background:#f8f9fa; }
-    h1,h2 { color:#333; }
-    form { margin:20px auto; background:#fff; padding:20px; display:inline-block; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); width:90%; max-width:400px; }
-    input, button { padding:10px; margin:5px; border-radius:5px; font-family:'Kantumruy Pro', sans-serif; font-size:14px; width:90%; max-width:300px; }
-    button { border:none; cursor:pointer; }
-    .btn-present { background:#28a745; color:#fff; }
-    .btn-present:hover { background:#218838; }
-    .btn-absent { background:#dc3545; color:#fff; }
-    .btn-absent:hover { background:#c82333; }
-    table { margin:20px auto; border-collapse:collapse; width:95%; max-width:600px; background:#fff; box-shadow:0 0 10px rgba(0,0,0,0.1); font-size:14px; }
-    th, td { border:1px solid #ddd; padding:8px; word-break:break-word; }
-    th { background:#007bff; color:#fff; }
-    .present { color:green; font-weight:bold; }
-    .absent { color:red; font-weight:bold; }
-    #clearHistory, #exportCSV { margin-top:10px; width:90%; max-width:200px; }
-    #clearHistory { background:#ffc107; color:#000; }
-    #clearHistory:hover { background:#e0a800; }
-    #exportCSV { background:#17a2b8; color:#fff; }
-    #exportCSV:hover { background:#117a8b; }
-    #adminPanel { display:none; margin-top:20px; }
-
-    /* Responsive for small screens */
-    @media screen and (max-width:600px){
-      table, th, td { font-size:12px; }
-      input, button { font-size:12px; padding:8px; }
-      form { padding:15px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreatorFlow Pro - Content Deadline & Workflow Manager</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>វត្តមានសិស្ស</h1>
 
-  <!-- Form Input សិស្ស -->
-  <form id="attendanceForm">
-    <label for="name">សូមវាយឈ្មោះខ្លួនឯង:</label><br>
-    <input type="text" id="name" placeholder="ឈ្មោះសិស្ស" required><br>
-    <button type="button" class="btn-present" onclick="markAttendance('មក')">មក</button>
-    <button type="button" class="btn-absent" onclick="markAttendance('មិនមក')">មិនមក</button>
-  </form>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-clapperboard"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>Creator<span>Flow</span></h2>
+                    <span>Workflow Manager</span>
+                </div>
+            </div>
 
-  <!-- Admin Login -->
-  <h2>Admin Login</h2>
-  <form id="adminForm">
-    <input type="password" id="adminPassword" placeholder="Password Admin">
-    <button type="button" onclick="loginAdmin()">ចូល</button>
-  </form>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-view="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="tasks">
+                    <i class="fa-solid fa-kanban"></i>
+                    <span>Tasks Board</span>
+                </button>
+                <button class="nav-btn" data-view="sponsors">
+                    <i class="fa-solid fa-handshake"></i>
+                    <span>Sponsors & Income</span>
+                </button>
+            </nav>
 
-  <!-- Admin Panel -->
-  <div id="adminPanel">
-    <h2>ប្រវត្តិវត្តមានសិស្ស</h2>
-    <table id="attendanceTable">
-      <thead>
-        <tr>
-          <th>ល.រ</th>
-          <th>ឈ្មោះសិស្ស</th>
-          <th>ស្ថានភាព</th>
-          <th>ម៉ោង</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button id="clearHistory" onclick="clearHistory()">🗑️ សម្អាតប្រវត្តិ</button>
-    <button id="exportCSV" onclick="exportCSV()">⬇️ Export CSV</button>
-  </div>
+            <!-- Data Management / Backup Options -->
+            <div class="sidebar-card-section">
+                <div class="sidebar-card">
+                    <i class="fa-solid fa-database"></i>
+                    <div>
+                        <div class="card-title">ការគ្រប់គ្រងទិន្នន័យ</div>
+                        <div class="card-desc">Local Store Engine Active</div>
+                    </div>
+                </div>
+                <div class="backup-actions">
+                    <button class="btn-xs" id="export-json-btn" title="ទាញយកទិន្នន័យទុក (Backup)"><i class="fa-solid fa-download"></i> Backup JSON</button>
+                    <label class="btn-xs" for="import-json-input" title="បញ្ចូលទិន្នន័យចាស់ (Restore)" style="cursor: pointer;">
+                        <i class="fa-solid fa-upload"></i> Restore
+                    </label>
+                    <input type="file" id="import-json-input" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </aside>
 
-  <script>
-    const TELEGRAM_TOKEN = "7855792983:AAFHz0DUNqGr8lGyYXnO4W4kh7RI_1y14ps";
-    const CHAT_ID = "1481970507";
-    const ADMIN_PASSWORD = "2025";
-    let counter = 0;
-    let history = [];
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-info">
+                    <h1 id="page-title">Content & Deadline Manager</h1>
+                    <p>គ្រប់គ្រងការងារ Content តាមដាន Deadline និងប្រាក់ចំណូលពី Sponsor</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="telegram-export-btn">
+                        <i class="fa-brands fa-telegram"></i>
+                        <span>Export Telegram Report</span>
+                    </button>
+                    <button class="btn btn-primary" id="open-modal-btn">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>បន្ថែម Content ថ្មី</span>
+                    </button>
+                </div>
+            </header>
 
-    // Load history
-    window.onload = function() {
-      const saved = localStorage.getItem("attendanceHistory");
-      if(saved) { history = JSON.parse(saved); }
-    }
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view-section active-view">
+                <!-- Stat Cards Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card urgent">
+                        <div class="stat-icon-wrapper"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-urgent">0</h3>
+                            <p>ប្រញាប់ខ្លាំង (Overdue / <24h)</p>
+                        </div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon-wrapper"><i class="fa-solid fa-clock"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-warning">0</h3>
+                            <p>ជិតដល់កំណត់ (ជិត ៣ថ្ងៃ)</p>
+                        </div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-icon-wrapper"><i class="fa-solid fa-spinner"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-in-progress">0</h3>
+                            <p>កំពុងផលិត (In Progress)</p>
+                        </div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon-wrapper"><i class="fa-solid fa-sack-dollar"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-month-income">$0</h3>
+                            <p>ចំណូលសរុបខែនេះ</p>
+                        </div>
+                    </div>
+                </div>
 
-    function markAttendance(status) {
-      const nameInput = document.getElementById("name");
-      const name = nameInput.value.trim();
-      if(!name) { alert("សូមវាយឈ្មោះសិស្ស!"); return; }
+                <!-- Urgent Tasks Overview Table -->
+                <div class="glass-panel">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-fire-flame-curved"></i> Content ដែលត្រូវប្រញាប់ធ្វើបញ្ជូន (Urgent Priority)</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>ចំណងជើង Content</th>
+                                    <th>Client / Brand</th>
+                                    <th>Platform</th>
+                                    <th>Status</th>
+                                    <th>Deadline</th>
+                                    <th style="text-align: right;">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="urgent-tasks-tbody">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-      const timeNow = new Date().toLocaleString();
-      const record = { name, status, time: timeNow };
-      history.push(record);
-      localStorage.setItem("attendanceHistory", JSON.stringify(history));
-      nameInput.value = "";
+            <!-- Tasks Board View -->
+            <section id="tasks-view" class="view-section">
+                <!-- Search and Filters -->
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="search-input" placeholder="ស្វែងរកចំណងជើង ឬ ឈ្មោះ Client...">
+                    </div>
+                    
+                    <select id="filter-client" class="select-box">
+                        <option value="">-- Client ទាំងអស់ --</option>
+                    </select>
 
-      // Send Telegram
-      const message = `📚 វត្តមានសិស្ស\n👤 ឈ្មោះ: ${name}\n📌 ស្ថានភាព: ${status}\n⏰ ម៉ោង: ${timeNow}`;
-      fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ chat_id: CHAT_ID, text: message })
-      });
-    }
+                    <select id="filter-platform" class="select-box">
+                        <option value="">-- Platform ទាំងអស់ --</option>
+                        <option value="TikTok">TikTok</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="YouTube">YouTube</option>
+                        <option value="Instagram">Instagram</option>
+                    </select>
+                </div>
 
-    function loginAdmin() {
-      const pass = document.getElementById("adminPassword").value;
-      if(pass === ADMIN_PASSWORD){
-        document.getElementById("adminPanel").style.display = "block";
-        document.getElementById("adminForm").style.display = "none";
-        renderTable();
-      } else {
-        alert("Password មិនត្រឹមត្រូវ!");
-      }
-    }
+                <!-- Kanban Board -->
+                <div class="kanban-board">
+                    <div class="kanban-column">
+                        <div class="col-head col-idea">
+                            <span><i class="fa-regular fa-lightbulb"></i> Idea / Draft</span>
+                            <span class="count-badge" id="count-Idea">0</span>
+                        </div>
+                        <div class="task-list" id="list-Idea"></div>
+                    </div>
 
-    function renderTable() {
-      const tbody = document.getElementById("attendanceTable").getElementsByTagName("tbody")[0];
-      tbody.innerHTML = "";
-      counter = 0;
-      history.forEach(record => addRow(record));
-    }
+                    <div class="kanban-column">
+                        <div class="col-head col-shooting">
+                            <span><i class="fa-solid fa-video"></i> Film / Shooting</span>
+                            <span class="count-badge" id="count-Shooting">0</span>
+                        </div>
+                        <div class="task-list" id="list-Shooting"></div>
+                    </div>
 
-    function addRow(record) {
-      counter++;
-      const table = document.getElementById("attendanceTable").getElementsByTagName("tbody")[0];
-      const newRow = table.insertRow();
-      newRow.insertCell(0).innerText = counter;
-      newRow.insertCell(1).innerText = record.name;
-      newRow.insertCell(2).innerHTML = record.status === "មក" ? `<span class="present">${record.status}</span>` : `<span class="absent">${record.status}</span>`;
-      newRow.insertCell(3).innerText = record.time;
-    }
+                    <div class="kanban-column">
+                        <div class="col-head col-editing">
+                            <span><i class="fa-solid fa-wand-magic-sparkles"></i> Editing</span>
+                            <span class="count-badge" id="count-Editing">0</span>
+                        </div>
+                        <div class="task-list" id="list-Editing"></div>
+                    </div>
 
-    function clearHistory() {
-      if(confirm("តើអ្នកចង់សម្អាតប្រវត្តិវត្តមានទាំងអស់មែនទេ?")){
-        localStorage.removeItem("attendanceHistory");
-        history = [];
-        renderTable();
-      }
-    }
+                    <div class="kanban-column">
+                        <div class="col-head col-review">
+                            <span><i class="fa-solid fa-eye"></i> Client Review</span>
+                            <span class="count-badge" id="count-Review">0</span>
+                        </div>
+                        <div class="task-list" id="list-Review"></div>
+                    </div>
 
-    function exportCSV() {
-      if(history.length===0){ alert("មិនមានទិន្នន័យសម្រាប់ Export!"); return; }
-      let csv = "ល.រ,ឈ្មោះសិស្ស,ស្ថានភាព,ម៉ោង\n";
-      history.forEach((rec,i)=>{
-        csv += `${i+1},${rec.name},${rec.status},${rec.time}\n`;
-      });
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Attendance_History.csv`;
-      link.click();
-    }
-  </script>
+                    <div class="kanban-column">
+                        <div class="col-head col-done">
+                            <span><i class="fa-solid fa-check-double"></i> Done / Approved</span>
+                            <span class="count-badge" id="count-Done">0</span>
+                        </div>
+                        <div class="task-list" id="list-Done"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sponsors & Revenue View -->
+            <section id="sponsors-view" class="view-section">
+                <div class="sponsor-header-actions">
+                    <button class="btn btn-primary" id="open-sponsor-modal-btn">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>បន្ថែម Sponsor / ចំណូលថ្មី</span>
+                    </button>
+                </div>
+
+                <div class="glass-panel" style="margin-top: 1rem;">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-handshake"></i> បញ្ជី Sponsor & ចំណូលប្រចាំខែ</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>ឈ្មោះ Brand / Sponsor</th>
+                                    <th>ប្រភពចំណូល</th>
+                                    <th>ចំនួនថវិកា ($)</th>
+                                    <th>កាលបរិច្ឆេទ</th>
+                                    <th>ស្ថានភាពទូទាត់</th>
+                                    <th style="text-align: right;">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sponsors-tbody">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Form (Add/Edit Content) -->
+    <div class="modal" id="task-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-title">បន្ថែម Content ថ្មី</h3>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <form id="task-form">
+                <input type="hidden" id="task-id">
+
+                <div class="input-group">
+                    <label for="task-title">ចំណងជើង Content / ប្រធានបទ *</label>
+                    <input type="text" id="task-title" required placeholder="ឧ. វីដេអូប្រូម៉ូសិនផលិតផលថ្មី">
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="task-client">ឈ្មោះ Client / Brand *</label>
+                        <input type="text" id="task-client" required placeholder="ឧ. VCK SHOP">
+                    </div>
+                    <div class="input-group">
+                        <label for="task-platform">Platform *</label>
+                        <select id="task-platform" required>
+                            <option value="TikTok">TikTok</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="YouTube">YouTube</option>
+                            <option value="Instagram">Instagram</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="task-deadline">កាលបរិច្ឆេទ & ម៉ោងត្រូវបញ្ជូន (Deadline) *</label>
+                        <input type="datetime-local" id="task-deadline" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="task-status">Status បច្ចុប្បន្ន</label>
+                        <select id="task-status">
+                            <option value="Idea">Idea / Draft</option>
+                            <option value="Shooting">Film / Shooting</option>
+                            <option value="Editing">Editing</option>
+                            <option value="Review">Client Review</option>
+                            <option value="Done">Done / Approved</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="task-drive">Link មេឌៀ / CapCut / Google Drive</label>
+                    <input type="url" id="task-drive" placeholder="https://drive.google.com/...">
+                </div>
+
+                <div class="input-group">
+                    <label for="task-script">Script / កំណត់ចំណាំ (Notes)</label>
+                    <textarea id="task-script" rows="3" placeholder="សរសេរកត់ត្រា Script សង្ខេប ឬលក្ខខណ្ឌ Client..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-btn">បោះបង់</button>
+                    <button type="submit" class="btn btn-primary">រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Form (Add/Edit Sponsor & Revenue) -->
+    <div class="modal" id="sponsor-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="sponsor-modal-title">បន្ថែម Sponsor / ចំណូលថ្មី</h3>
+                <button class="close-btn" id="close-sponsor-modal-btn">&times;</button>
+            </div>
+            <form id="sponsor-form">
+                <input type="hidden" id="sponsor-id">
+
+                <div class="input-group">
+                    <label for="sponsor-brand">ឈ្មោះ Brand / Sponsor *</label>
+                    <input type="text" id="sponsor-brand" required placeholder="ឧ. Smart Axiata, VCK SHOP">
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="sponsor-type">ប្រភពចំណូល *</label>
+                        <select id="sponsor-type" required>
+                            <option value="Sponsorship">Sponsorship / Video Deal</option>
+                            <option value="AdSense">Platform AdSense / Bonus</option>
+                            <option value="Affiliate">Affiliate Marketing</option>
+                            <option value="Other">ផ្សេងៗ</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="sponsor-amount">ចំនួនថវិកា ($) *</label>
+                        <input type="number" id="sponsor-amount" step="0.01" required placeholder="ឧ. 350">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label for="sponsor-date">កាលបរិច្ឆេទទទួល *</label>
+                        <input type="date" id="sponsor-date" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="sponsor-status">ស្ថានភាពទូទាត់ *</label>
+                        <select id="sponsor-status">
+                            <option value="Paid">បានទូទាត់រួច (Paid)</option>
+                            <option value="Pending">រង់ចាំការទូទាត់ (Pending)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-sponsor-btn">បោះបង់</button>
+                    <button type="submit" class="btn btn-primary">រក្សាទុកចំណូល</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="app.js"></script>
 </body>
 </html>
