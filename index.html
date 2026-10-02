@@ -16,7 +16,7 @@
 <body>
 
     <div class="app-layout">
-        <!-- Sidebar Navigation -->
+        <!-- Sidebar Navigation (Desktop & Tablet) -->
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-icon">
@@ -73,11 +73,11 @@
                 <div class="header-actions">
                     <button class="btn btn-secondary" id="telegram-export-btn">
                         <i class="fa-brands fa-telegram"></i>
-                        <span>Export Telegram Report</span>
+                        <span>Export Telegram</span>
                     </button>
                     <button class="btn btn-primary" id="open-modal-btn">
                         <i class="fa-solid fa-plus"></i>
-                        <span>បន្ថែម Content ថ្មី</span>
+                        <span>បន្ថែម Content</span>
                     </button>
                 </div>
             </header>
@@ -119,7 +119,7 @@
                 <!-- Urgent Tasks Overview Table -->
                 <div class="glass-panel">
                     <div class="panel-header">
-                        <h3><i class="fa-solid fa-fire-flame-curved"></i> Content ដែលត្រូវប្រញាប់ធ្វើបញ្ជូន (Urgent Priority)</h3>
+                        <h3><i class="fa-solid fa-fire-flame-curved"></i> Content ប្រញាប់ខ្លាំង (Urgent Priority)</h3>
                     </div>
                     <div class="table-container">
                         <table class="modern-table">
@@ -150,17 +150,19 @@
                         <input type="text" id="search-input" placeholder="ស្វែងរកចំណងជើង ឬ ឈ្មោះ Client...">
                     </div>
                     
-                    <select id="filter-client" class="select-box">
-                        <option value="">-- Client ទាំងអស់ --</option>
-                    </select>
+                    <div class="filter-group">
+                        <select id="filter-client" class="select-box">
+                            <option value="">-- Client ទាំងអស់ --</option>
+                        </select>
 
-                    <select id="filter-platform" class="select-box">
-                        <option value="">-- Platform ទាំងអស់ --</option>
-                        <option value="TikTok">TikTok</option>
-                        <option value="Facebook">Facebook</option>
-                        <option value="YouTube">YouTube</option>
-                        <option value="Instagram">Instagram</option>
-                    </select>
+                        <select id="filter-platform" class="select-box">
+                            <option value="">-- Platform ទាំងអស់ --</option>
+                            <option value="TikTok">TikTok</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="YouTube">YouTube</option>
+                            <option value="Instagram">Instagram</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Kanban Board -->
@@ -241,6 +243,22 @@
             </section>
         </main>
     </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav">
+        <button class="mobile-nav-btn active" data-view="dashboard">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Dashboard</span>
+        </button>
+        <button class="mobile-nav-btn" data-view="tasks">
+            <i class="fa-solid fa-kanban"></i>
+            <span>Tasks</span>
+        </button>
+        <button class="mobile-nav-btn" data-view="sponsors">
+            <i class="fa-solid fa-handshake"></i>
+            <span>Sponsors</span>
+        </button>
+    </nav>
 
     <!-- Modal Form (Add/Edit Content) -->
     <div class="modal" id="task-modal">
