@@ -1,23 +1,22 @@
-// Data Storage Keys
+// Storage Keys
 const TASKS_STORAGE_KEY = 'creatorflow_tasks';
 const SPONSORS_STORAGE_KEY = 'creatorflow_sponsors';
 
-// Clear sample data: Initialize empty arrays if no local data is found
+// Load or Initial Empty Arrays
 let tasks = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || [];
 let sponsors = JSON.parse(localStorage.getItem(SPONSORS_STORAGE_KEY)) || [];
 
-// DOM Element References
-const navBtns = document.querySelectorAll('.nav-btn');
+// Navigation Buttons (Both Desktop & Mobile)
+const navBtns = document.querySelectorAll('.nav-btn, .mobile-nav-btn');
 const views = document.querySelectorAll('.view-section');
 
-// Task Modal DOM
+// Modals
 const taskModal = document.getElementById('task-modal');
 const openModalBtn = document.getElementById('open-modal-btn');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const taskForm = document.getElementById('task-form');
 
-// Sponsor Modal DOM
 const sponsorModal = document.getElementById('sponsor-modal');
 const openSponsorModalBtn = document.getElementById('open-sponsor-modal-btn');
 const closeSponsorModalBtn = document.getElementById('close-sponsor-modal-btn');
@@ -26,24 +25,30 @@ const sponsorForm = document.getElementById('sponsor-form');
 
 const telegramExportBtn = document.getElementById('telegram-export-btn');
 
-// Filters DOM
+// Filters
 const searchInput = document.getElementById('search-input');
 const filterClient = document.getElementById('filter-client');
 const filterPlatform = document.getElementById('filter-platform');
 
-// Navigation Switcher
+// Unified Navigation Handler (Desktop + Mobile)
 navBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        navBtns.forEach(b => b.classList.remove('active'));
-        views.forEach(v => v.classList.remove('active-view'));
-
-        btn.classList.add('active');
         const viewName = btn.getAttribute('data-view');
+        
+        navBtns.forEach(b => {
+            if (b.getAttribute('data-view') === viewName) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+
+        views.forEach(v => v.classList.remove('active-view'));
         document.getElementById(`${viewName}-view`).classList.add('active-view');
     });
 });
 
-// Task Modal Handlers
+// Task Modal Actions
 function openModal(task = null) {
     taskForm.reset();
     if (task) {
@@ -71,7 +76,7 @@ openModalBtn.addEventListener('click', () => openModal());
 closeModalBtn.addEventListener('click', closeModal);
 cancelBtn.addEventListener('click', closeModal);
 
-// Sponsor Modal Handlers
+// Sponsor Modal Actions
 function openSponsorModal(sponsor = null) {
     sponsorForm.reset();
     if (sponsor) {
@@ -98,23 +103,19 @@ openSponsorModalBtn.addEventListener('click', () => openSponsorModal());
 closeSponsorModalBtn.addEventListener('click', closeSponsorModal);
 cancelSponsorBtn.addEventListener('click', closeSponsorModal);
 
-// Close Modals Outside
 window.addEventListener('click', (e) => {
     if (e.target === taskModal) closeModal();
     if (e.target === sponsorModal) closeSponsorModal();
 });
 
-// Save Tasks to LocalStorage
 function saveTasks() {
     localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
 }
 
-// Save Sponsors to LocalStorage
 function saveSponsors() {
     localStorage.setItem(SPONSORS_STORAGE_KEY, JSON.stringify(sponsors));
 }
 
-// Task Form Submit
 taskForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = document.getElementById('task-id').value || 't_' + Date.now().toString();
@@ -141,7 +142,6 @@ taskForm.addEventListener('submit', (e) => {
     renderApp();
 });
 
-// Sponsor Form Submit
 sponsorForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = document.getElementById('sponsor-id').value || 's_' + Date.now().toString();
@@ -166,20 +166,18 @@ sponsorForm.addEventListener('submit', (e) => {
     renderApp();
 });
 
-// Deadline Calculator
 function getDeadlineStatus(deadlineStr) {
     if (!deadlineStr) return { label: '-', class: 'badge-normal' };
     const now = new Date();
     const due = new Date(deadlineStr);
     const diffHours = (due - now) / (1000 * 60 * 60);
 
-    if (diffHours <= 0) return { label: 'ហួសពេលកំណត់ (Overdue)', class: 'badge-urgent', isUrgent: true };
-    if (diffHours <= 24) return { label: `សល់ ${Math.max(1, Math.round(diffHours))} ម៉ោងទៀត`, class: 'badge-urgent', isUrgent: true };
-    if (diffHours <= 72) return { label: `សល់ ${Math.round(diffHours / 24)} ថ្ងៃទៀត`, class: 'badge-warning', isWarning: true };
-    return { label: `សល់ ${Math.round(diffHours / 24)} ថ្ងៃទៀត`, class: 'badge-normal' };
+    if (diffHours <= 0) return { label: 'ហួសពេលកំណត់', class: 'badge-urgent', isUrgent: true };
+    if (diffHours <= 24) return { label: `សល់ ${Math.max(1, Math.round(diffHours))} ម៉ោង`, class: 'badge-urgent', isUrgent: true };
+    if (diffHours <= 72) return { label: `សល់ ${Math.round(diffHours / 24)} ថ្ងៃ`, class: 'badge-warning', isWarning: true };
+    return { label: `សល់ ${Math.round(diffHours / 24)} ថ្ងៃ`, class: 'badge-normal' };
 }
 
-// Delete Operations
 function deleteTask(id) {
     if (confirm('តើអ្នកពិតជាចង់លុប Content នេះមែនទេ?')) {
         tasks = tasks.filter(t => t.id !== id);
@@ -209,7 +207,6 @@ window.editSponsor = function(id) {
 window.deleteTask = deleteTask;
 window.deleteSponsor = deleteSponsor;
 
-// Filter Options Updater
 function updateClientFilterOptions() {
     const selected = filterClient.value;
     const clients = [...new Set(tasks.map(t => t.client).filter(Boolean))];
@@ -223,34 +220,28 @@ function updateClientFilterOptions() {
     });
 }
 
-// Telegram Export Handler
 telegramExportBtn.addEventListener('click', () => {
     const urgentTasks = tasks.filter(t => t.status !== 'Done' && getDeadlineStatus(t.deadline).isUrgent);
     
-    let text = `📌 *របាយការណ៍បច្ចុប្បន្នភាព Content (Urgent List)* 📌\n\n`;
+    let text = `📌 *របាយការណ៍ Content (Urgent List)* 📌\n\n`;
     if (urgentTasks.length === 0) {
         text += `✅ ពុំមាន Content ណាប្រញាប់ ឬជិតផុតកំណត់ឡើយ!`;
     } else {
         urgentTasks.forEach((t, i) => {
             const status = getDeadlineStatus(t.deadline);
-            text += `${i + 1}. *${t.title}* (${t.client})\n   • Platform: ${t.platform}\n   • Status: ${t.status}\n   • Remaining: ${status.label}\n\n`;
+            text += `${i + 1}. *${t.title}* (${t.client})\n   • Platform: ${t.platform}\n   • Remaining: ${status.label}\n\n`;
         });
     }
 
     navigator.clipboard.writeText(text).then(() => {
-        alert('បានចម្លង Report សង្ខេបរួចរាល់! អ្នកអាច Paste ផ្ញើទៅ Telegram បានភ្លាមៗ។');
+        alert('បានចម្លង Report រួចរាល់! អ្នកអាច Paste ផ្ញើទៅ Telegram បាន។');
     }).catch(err => {
         console.error('Failed to copy: ', err);
     });
 });
 
-// JSON Export (Backup Data)
 document.getElementById('export-json-btn').addEventListener('click', () => {
-    const backupData = {
-        tasks,
-        sponsors,
-        exportedAt: new Date().toISOString()
-    };
+    const backupData = { tasks, sponsors, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -260,7 +251,6 @@ document.getElementById('export-json-btn').addEventListener('click', () => {
     URL.revokeObjectURL(url);
 });
 
-// JSON Import (Restore Data)
 document.getElementById('import-json-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -286,7 +276,6 @@ document.getElementById('import-json-input').addEventListener('change', (e) => {
     reader.readAsText(file);
 });
 
-// UI Rendering Functions
 function renderApp() {
     renderDashboard();
     renderKanban();
@@ -299,7 +288,6 @@ function renderDashboard() {
     const warningTasks = tasks.filter(t => t.status !== 'Done' && getDeadlineStatus(t.deadline).isWarning);
     const inProgressTasks = tasks.filter(t => t.status !== 'Done');
 
-    // Calculate Monthly Income
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -316,7 +304,6 @@ function renderDashboard() {
     document.getElementById('stat-in-progress').innerText = inProgressTasks.length;
     document.getElementById('stat-month-income').innerText = `$${currentMonthIncome.toLocaleString()}`;
 
-    // Urgent Table Rendering
     const tbody = document.getElementById('urgent-tasks-tbody');
     tbody.innerHTML = '';
 
@@ -398,7 +385,7 @@ function renderSponsors() {
     tbody.innerHTML = '';
 
     if (sponsors.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-secondary); padding: 2rem;">មិនទាន់មានទិន្នន័យ Sponsor ឬចំណូលនៅឡើយទេ! សូមចុច "បន្ថែម Sponsor / ចំណូលថ្មី" ខាងលើ។</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-secondary); padding: 2rem;">មិនទាន់មានទិន្នន័យ Sponsor ឬចំណូលនៅឡើយទេ!</td></tr>`;
         return;
     }
 
@@ -419,10 +406,8 @@ function renderSponsors() {
     });
 }
 
-// Search and Filter Event Listeners
 searchInput.addEventListener('input', renderKanban);
 filterClient.addEventListener('change', renderKanban);
 filterPlatform.addEventListener('change', renderKanban);
 
-// Initial App Launch
 renderApp();
